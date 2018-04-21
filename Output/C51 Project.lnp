@@ -1,0 +1,7 @@
+"..\Output\MAIN.obj",
+"..\Output\PBDATA.obj",
+"..\Output\TIME_BASE.obj",
+"..\Output\Unknown_Category.obj",
+"..\Output\SysSelf-test_And_SysInit.obj" 
+TO "..\Output\C51 Project" 
+PRINT("..\Listing\C51 Project.m51") RAMSIZE(256) 

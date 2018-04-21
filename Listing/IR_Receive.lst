@@ -1,0 +1,95 @@
+C51 COMPILER V9.02   IR_RECEIVE                                                            03/31/2018 16:54:13 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE IR_RECEIVE
+OBJECT MODULE PLACED IN ..\Output\IR_Receive.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\Code\DirverCode\IR_Receive.C BROWSE INCDIR(..\Code\DeveloperCode\inc;..\
+                    -Code\DirverCode\inc;..\Code\Public\inc) DEBUG OBJECTEXTEND PRINT(..\Listing\IR_Receive.lst) OBJECT(..\Output\IR_Receive.
+                    -obj)
+
+line level    source
+
+   1          /* *******************************************************************************************
+   2          // Author: biu~
+   3          // Last Date:2017/04/07
+   4          // 结合LQB写的驱动修改；
+   5          /* ******************************************************************************************* */
+   6          
+   7          #include "IR_Receive.H"
+   8          
+   9          sbit IR_Receive = P1^0;
+  10          /* *******************************************************************************************
+  11          // 函数名称：ReceiveIRdata4()
+  12          // 函数功能：红外解码处理
+  13          // 在定时器中断中被调用; 
+  14          /* ******************************************************************************************* */
+  15          bit ReceiveSucceed;     //接收成功标志;
+  16          u8      NECRec[4];          //接收到的所有数据；
+  17          
+  18          void ReceiveIRdata4()
+  19          {
+  20   1          static bit IRsync;                  //是否与发射数据位置同步；
+  21   1          static u8 bitN;                     //位码装载数；
+  22   1          static bit IRa,IRb;                 //接收IO状态记录；
+  23   1          static u16 cntStep;                 //计时基准；
+  24   1      
+  25   1          if (!ReceiveSucceed)
+  26   1          {
+  27   2              cntStep++;      
+  28   2              IRb = IRa;                          //上次电位状态
+  29   2              IRa = IR_Receive;                   //当前电位状态
+  30   2              if (IRb && !IRa)                    //是否下降沿（上次高，当前低）
+  31   2              {
+  32   3                  if(cntStep > Boot_Limit)        //超过同步时间？
+  33   3                  {   
+  34   4                      IRsync=0;                   //同步位清0
+  35   4                  }
+  36   3                  else if(cntStep > Boot_Lower)
+  37   3                  { 
+  38   4                      IRsync=1; 
+  39   4                      bitN=32;                    //同步位置1，装载位码数
+  40   4                  }                                                                             
+  41   3                  else if(IRsync)                 //如果已同步
+  42   3                  {
+  43   4                      if(cntStep > Bit1_Limit)
+  44   4                      {
+  45   5                          IRsync=0;              
+  46   5                      }
+  47   4                      else
+  48   4                      {                                       
+  49   5                          NECRec[3] >>= 1;    
+  50   5                          if(cntStep > Bit0_Limit)
+  51   5                              NECRec[3] |= 0x80;      //“0”与“1”
+  52   5                          if(--bitN == 0)                             
+  53   5                          {
+C51 COMPILER V9.02   IR_RECEIVE                                                            03/31/2018 16:54:13 PAGE 2   
+
+  54   6                              IRsync = 0;             //同步位清0
+  55   6                              ReceiveSucceed = 1;     //解码有效，不进行数据校验；
+  56   6                          }
+  57   5                          else if((bitN & 0x07)== 0)  //NEC[3]每装满8位，移动保存一次（即 BitN%8 == 0）
+  58   5                          {   
+  59   6                              NECRec[0]=NECRec[1]; 
+  60   6                              NECRec[1]=NECRec[2]; 
+  61   6                              NECRec[2]=NECRec[3];   
+  62   6                          }
+  63   5                      }
+  64   4                  }
+  65   3                  cntStep = 0;                        //步数计清0
+  66   3              }
+  67   2          }
+  68   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    163    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      7    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      4    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

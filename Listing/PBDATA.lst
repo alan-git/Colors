@@ -1,0 +1,102 @@
+C51 COMPILER V9.02   PBDATA                                                                04/21/2018 17:36:46 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE PBDATA
+OBJECT MODULE PLACED IN ..\Output\PBDATA.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\Code\Public\PBDATA.C BROWSE INCDIR(..\Code\DeveloperCode\inc;..\Code\Dir
+                    -verCode\inc;..\Code\Public\inc) DEBUG OBJECTEXTEND PRINT(..\Listing\PBDATA.lst) OBJECT(..\Output\PBDATA.obj)
+
+line level    source
+
+   1          /* *******************************************************************************************
+   2          // Author:              biu~
+   3          // Last Date:   2018/03/23
+   4          // 公共调用函数，头文件中对公共引用数据进行声明；
+   5          /* ******************************************************************************************* */
+   6          
+   7          #include "PBDATA.H"
+   8          
+   9          #ifdef USE_SEG
+                      //*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+                      //    SEGMENT: ?CO?PBDATA，在Code区定义了数组，但没有被调用；
+              const u8 code W_Scan[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};              
+                  //const u8 code W_Scan[8] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80};              
+              const u8 code Seg_7[11] = {0xC0,0xF9,0xA4,0xB0,0x99,0x92,0x82,0xF8,0x80,0x90,0xFF};
+              #endif
+  16          
+  17          /* *******************************************************************************************
+  18          // 延时1US，一般用于驱动中改变引脚电平状态后微量延时；
+  19          /* ******************************************************************************************* */
+  20          void Delay1US()     //@24.000MHz
+  21          {
+  22   1          unsigned char i;
+  23   1      
+  24   1          _nop_();
+  25   1          _nop_();
+  26   1          i = 3;
+  27   1          while (--i);
+  28   1      }
+  29          
+  30          /* *******************************************************************************************
+  31          // US级延时
+  32          /* ******************************************************************************************* */
+  33          //void DelayUS(u16 x)
+  34          //{ 
+  35          //    u8 y;
+  36          //    while (x--)
+  37          //        for (y=0; y<PARAMETER_US; y++); 
+  38          //}
+  39          
+  40          /* *******************************************************************************************
+  41          // MS级CPU延时
+  42          ///* ******************************************************************************************* */
+  43          void DelayMS(u16 x)
+  44          {
+  45   1          u16 y;
+  46   1          while (x--)
+  47   1              for (y=0; y<PARAMETER_MS; y++); 
+  48   1      }
+  49          
+  50          /* *******************************************************************************************
+  51          // 系统状态提示灯闪烁
+  52          /* ******************************************************************************************* */
+  53          //void TestCode()
+  54          //{
+C51 COMPILER V9.02   PBDATA                                                                04/21/2018 17:36:46 PAGE 2   
+
+  55          //#ifdef DeveloperMode
+  56          //    SysLED_On();
+  57          //    DelayMS(500);
+  58          //    SysLED_Off();
+  59          //#endif
+  60          //      _nop_();
+  61          //}
+  62          
+  63          /* *******************************************************************************************
+  64          // 系统状态提示灯闪烁
+  65          /* ******************************************************************************************* */
+  66          void SysLED_Flash(u16 time, u8 times)
+  67          {
+  68   1          u8 i;
+  69   1          for (i=0; i<times; i++)
+  70   1          {
+  71   2              SysLED_On();
+  72   2              DelayMS(time);
+  73   2              SysLED_Off();
+  74   2              DelayMS(time);
+  75   2          }
+  76   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     72    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

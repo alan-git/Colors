@@ -1,0 +1,46 @@
+C51 COMPILER V9.02   UNKNOWN_CATEGORY                                                      04/21/2018 17:36:46 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE UNKNOWN_CATEGORY
+OBJECT MODULE PLACED IN ..\Output\Unknown_Category.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\Code\DeveloperCode\Unknown_Category.C BROWSE INCDIR(..\Code\DeveloperCod
+                    -e\inc;..\Code\DirverCode\inc;..\Code\Public\inc) DEBUG OBJECTEXTEND PRINT(..\Listing\Unknown_Category.lst) OBJECT(..\Out
+                    -put\Unknown_Category.obj)
+
+line level    source
+
+   1          /* *******************************************************************************************
+   2          // Author: biu~
+   3          // 无法明确分类的用户功能函数存放处；
+   4          /* ******************************************************************************************* */
+   5          
+   6          #include "Unknown_Category.H"
+   7          
+   8          /* *******************************************************************************************
+   9          // 下载检测
+  10          /* ******************************************************************************************* */
+  11          // ISP区复位：
+  12          void STC_ISP()
+  13          {
+  14   1      #ifdef DeveloperMode
+  15   1          P30 = 1;
+  16   1          Delay1US();
+  17   1          Delay1US();
+  18   1          if (!P30)
+  19   1              IAP_CONTR = 0x60;
+  20   1      #endif
+  21   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     15    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
