@@ -42,13 +42,13 @@ void InitInterrupt()
 /* ******************************************************************************************* */
 void Timer_TimeBase_Isr () interrupt 1 using 1
 {
-    static u16 cp0, cp1, cp2;
-    if (++ cp0 > OVERFLOW_TIMES_1ST)
-    {
-        cp0 = 0;
-        // 以OVERFLOW_TIMES_1ST为时基：
-//        ReceiveIRdata4();
-    }
+    static u16 /*cp0, */cp1, cp2;
+//    if (++ cp0 > OVERFLOW_TIMES_1ST)
+//    {
+//        cp0 = 0;
+//        // 以OVERFLOW_TIMES_1ST为时基：
+////        ReceiveIRdata4();
+//    }
     if (++ cp1 > OVERFLOW_TIMES_2ND)
     {
         cp1 = 0;

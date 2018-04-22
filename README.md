@@ -1,4 +1,5 @@
 # Colors
+![Colors](Colors.png "Colors")
 
 #### 开发环境：
     Source program：*Keil uVision4 V9.02*
@@ -21,5 +22,5 @@
     Edit:       Notepad++ 
     Preview:    Moeditor
     Language:   Markdown & HTML
-    Last-Edit:  2018/04/20
-    Edits:      3
+    Last-Edit:  2018/04/22
+    Edits:      4

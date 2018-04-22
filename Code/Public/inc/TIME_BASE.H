@@ -49,6 +49,7 @@
 #define _10MS       (10000L)
 #define _5MS        (5000L)
 #define _2MS        (2000L)
+#define _1MS        (1000L)
 
 extern void InitInterrupt();
 

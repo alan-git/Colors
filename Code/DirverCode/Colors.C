@@ -1,6 +1,6 @@
 /* *******************************************************************************************
 // Author: biu~
-// Last Date:2018/04/20
+// Last Date:2018/04/22
 /* ******************************************************************************************* */
 #include "Colors.H"
 
@@ -33,12 +33,12 @@ void TimerPWM_Init()
 /* ******************************************************************************************* */
 void TimerPWM()
 {
-    static idata u8 temp_pwm_duty = 0;
-    if(temp_pwm_duty == PwmDuty[PWM_BLUE]) Color_Blue = PWM_OFF;       //判断PWM占空比是否结束
+    static data u8 temp_pwm_duty = 0;
+    if(temp_pwm_duty == PwmDuty[PWM_BLUE]) Color_Blue = PWM_OFF;       //判断PWM占空比是否结束；
     if(temp_pwm_duty == PwmDuty[PWM_GREEN]) Color_Green = PWM_OFF;
     if(temp_pwm_duty == PwmDuty[PWM_RED]) Color_Red = PWM_OFF;
         
-    if(++temp_pwm_duty == PWM_DUTY_MAX)                 //PWM周期结束，重新开始新的周期
+    if(++temp_pwm_duty == PWM_DUTY_MAX)                 //PWM周期结束，重新开始新的周期；
     {
         temp_pwm_duty = 0;
         if (PwmDuty[PWM_BLUE] != 0)                     //在PWM占空为0时不开启灯光；
@@ -72,9 +72,9 @@ bit TimerPWM_Duty_Add(u8 _bit, u8 temp_pwm)
     }  
     else 
     {
-        return 1;
+        return TRUE;
     }  
-    return 0;
+    return FALSE;
 }
 
 /* *******************************************************************************************
@@ -99,9 +99,9 @@ bit TimerPWM_Duty_Dec(u8 _bit, u8 temp_pwm)
     }
     else 
     {
-        return 1;
+        return TRUE;
     }  
-    return 0;
+    return FALSE;
 }
 
 #define DEC 0
@@ -110,6 +110,27 @@ bit TimerPWM_Duty_Dec(u8 _bit, u8 temp_pwm)
 #define BLUE_RED    1
 #define BLUE_GREEN  2
 #define RED_GREEN   3
+/* *******************************************************************************************
+// 定时器延时函数 
+// 参数1为x个100MS，最大延时不超过25.5S；
+// 参数2为基准时间为多少毫秒，SLOW模式与FAST模式均有自己的基准时长；
+/* ******************************************************************************************* */
+static bit TimerDelay(u8 x_100ms, u8 base_ms)
+{
+    static u16 Cp;
+    static u8 x_Cp;
+    if (++Cp >= (100 / base_ms))
+    {
+        Cp = 0;
+        x_Cp ++;
+        if (x_100ms <= x_Cp)
+        {
+            x_Cp = 0;
+            return TRUE;
+        }
+    }
+    return FALSE;  
+}
 /* *******************************************************************************************
 // 多（双）颜色亮度控制
 /* ******************************************************************************************* */
@@ -157,7 +178,7 @@ static bit conColorsPWM(u8 colors, bit color1_dec_or_inc, u8 temp_color1, bit co
         default:
             break;
     }
-    return ((count == 2) ? 1 : 0);
+    return ((count == 2) ? TRUE : FALSE);
 }
 
 /* *******************************************************************************************
@@ -178,12 +199,13 @@ static bit conAllColorsOff()
     {
         count ++;
     }
-    return ((count == 3) ? 1 : 0);
+    return ((count == 3) ? TRUE : FALSE);
 }
 
 #define SLOW 0
 #define FAST 1
 
+//bit conSpeed = SLOW;
 bit conSpeed = SLOW;
 /* *******************************************************************************************
 // PWM占空比改变控制：慢速
@@ -195,45 +217,26 @@ void Con_TimerPWM_Duty_Slow()
     {
         switch (mode)
         {
-//            case 0: if(TimerPWM_Duty_Add(PWM_BLUE, 255) == 1) {mode ++;}
-            case 0: if(TimerPWM_Duty_Add(PWM_BLUE, 255)) {mode ++;}
+//            case 0: if (TimerPWM_Duty_Add(PWM_BLUE, PWM_DUTY_MAX) == 1) {mode ++;}
+            case 0: if (TimerPWM_Duty_Add(PWM_BLUE, PWM_DUTY_MAX)) {mode ++;}
                 break; 
-            case 1: if(TimerPWM_Duty_Dec(PWM_BLUE, 0)) {mode ++;}
+            case 1: if (TimerPWM_Duty_Dec(PWM_BLUE, 0))
+                        if (TimerDelay(2, TIME_BASE_2ND/1000)) {mode ++;}   //单蓝灯呼吸一次；
+                break; 
+            case 2: if (TimerPWM_Duty_Add(PWM_RED, PWM_DUTY_MAX))           //红灯渐亮，后逐渐变紫；
+                        if (TimerPWM_Duty_Add(PWM_BLUE, PWM_DUTY_MAX)) {mode ++;}
+                break; 
+            case 3: if (TimerPWM_Duty_Dec(PWM_RED, 0))                      //紫灯渐蓝，后逐渐变为靛蓝（或者叫做青？），再后为绿；
+                        if (TimerPWM_Duty_Add(PWM_GREEN, PWM_DUTY_MAX))
+                            if (TimerPWM_Duty_Dec(PWM_BLUE, 0)) {mode ++;}      
+                break;                                                          
+            case 4: if (TimerPWM_Duty_Add(PWM_RED, PWM_DUTY_MAX))           //绿渐变为黄，后渐变为红，渐熄；
+                        if (TimerPWM_Duty_Dec(PWM_GREEN, 0)) {mode ++;}          
                 break;
-            case 2: if(TimerPWM_Duty_Add(PWM_RED, 255)) {mode ++;}
+            case 5: if (TimerPWM_Duty_Dec(PWM_RED, 0))                       //红渐熄，切换为快速变换；
+                        if (TimerDelay(2, TIME_BASE_2ND/1000)) {mode ++; conSpeed = FAST;}
                 break;
-            case 3: if(TimerPWM_Duty_Dec(PWM_RED, 80)) {mode ++; conSpeed = FAST;}
-                break;
-#define BLUE_RED    1
-#define BLUE_GREEN  2
-#define RED_GREEN   3
-#define DEC 0
-#define ADD 1
-            case 4: if(conColorsPWM(BLUE_RED, ADD, 120, ADD, 200)) {mode ++;} 
-                break;
-            case 5: if(conColorsPWM(BLUE_RED, ADD, 230, ADD, 255)) {mode ++;}
-                break;
-            case 6: if (conAllColorsOff()) {mode ++;}
-                break;                                                                                                      
-            case 7: if(conColorsPWM(BLUE_GREEN, ADD, 50, ADD, 230)) {mode ++;}
-                break;
-            case 8: if(conColorsPWM(RED_GREEN, ADD, 255, DEC, 0)) {mode ++;}
-                break;
-            case 9: if(conAllColorsOff()) {mode ++; conSpeed = FAST;}
-                break;
-            case 10: if(conColorsPWM(BLUE_RED, ADD, 80, ADD, 200)) {mode ++;}
-                break;
-            case 11: if(conColorsPWM(BLUE_RED, ADD, 230, ADD, 255)) {mode ++;}
-                break;
-            case 12: if(conAllColorsOff()) {mode ++;}
-                break;
-            case 13: if(conColorsPWM(RED_GREEN, ADD, 20, ADD, 255)) {mode ++;}
-                break;
-            case 14: if(conAllColorsOff()) {mode ++;}
-                break;
-            case 15: if(conColorsPWM(BLUE_GREEN, ADD, 50, ADD, 230)) {mode ++; conSpeed = FAST;}
-                break;
-            default:if(conAllColorsOff()) {mode = 0;}
+            default:if (conAllColorsOff()) {mode = 0;}
                 break;
         }
     }
@@ -247,33 +250,43 @@ void Con_TimerPWM_Duty_Fast()
     static u8 mode = 0;         //当前模式；
     if (conSpeed == FAST)
     {
+//#define BLUE_RED    1
+//#define BLUE_GREEN  2
+//#define RED_GREEN   3
         switch (mode)
         {
-            case 0: if(TimerPWM_Duty_Add(PWM_GREEN, 255)) {mode ++;}
+            case 0: if (TimerPWM_Duty_Add(PWM_GREEN, PWM_DUTY_MAX)) {mode ++;}
                 break;
-            case 1: if(TimerPWM_Duty_Dec(PWM_GREEN, 120)) {mode ++;}
+            case 1: if (TimerPWM_Duty_Dec(PWM_GREEN, PWM_DUTY_MAX/3*2)) 
+                        if (TimerPWM_Duty_Add(PWM_RED, PWM_DUTY_MAX))
+                            if (TimerDelay(3, TIME_BASE_3RD/1000)) {mode ++;}
                 break;
-            case 2: if(TimerPWM_Duty_Add(PWM_BLUE, 60)) {mode ++;}
+            case 2: if (conColorsPWM(RED_GREEN, DEC, PWM_DUTY_MAX/3, DEC, 0))
+                        if (TimerPWM_Duty_Add(PWM_BLUE, PWM_DUTY_MAX/3)) {mode ++;}
                 break;
-            case 3: if(conColorsPWM(BLUE_GREEN, DEC, 0, ADD, 90)) {mode ++;}
+            case 3: if (conColorsPWM(BLUE_RED, ADD, PWM_DUTY_MAX, ADD, PWM_DUTY_MAX/3*2))
+                        if (TimerDelay(3, TIME_BASE_3RD/1000)) {mode ++;}
                 break;
-            case 4: if(conColorsPWM(RED_GREEN, ADD, 255, ADD, 240)) {mode ++;}
+            case 4: if (conColorsPWM(BLUE_RED, DEC, PWM_DUTY_MAX/3, DEC, 0)) {mode ++;}
                 break;
-            case 5: if(conColorsPWM(RED_GREEN, DEC, 230, DEC, 140)) {mode ++;}
+            case 5: if (conColorsPWM(BLUE_GREEN, ADD, PWM_DUTY_MAX, ADD, PWM_DUTY_MAX))
+                        if (TimerDelay(3, TIME_BASE_3RD/1000)) {mode ++;}
                 break;
-            case 6: if(conColorsPWM(BLUE_GREEN, ADD, 255, ADD, 230)) {mode ++;}
+            case 6: if (conColorsPWM(BLUE_GREEN, DEC, PWM_DUTY_MAX/5, DEC, PWM_DUTY_MAX/5))
+                        if (TimerPWM_Duty_Add(PWM_RED, PWM_DUTY_MAX))
+                            if (TimerDelay(3, TIME_BASE_3RD/1000)) {mode ++;}
                 break;
-            case 7: if(conAllColorsOff()) {mode ++; conSpeed = SLOW;}
+            case 7: if (conAllColorsOff())
+                        if (TimerDelay(3, TIME_BASE_3RD/1000)) {mode ++; conSpeed = SLOW;}
                 break;
-            case 8: if(TimerPWM_Duty_Add(PWM_RED, 255)) {mode ++;}
-                break;
-            case 9: if(conColorsPWM(BLUE_RED, ADD, 255, DEC, 120)) {mode ++;}
-                break;
-            case 10: if(TimerPWM_Duty_Dec(PWM_BLUE, 180)) {mode ++;}
-                break;
-            case 11: if(conColorsPWM(BLUE_GREEN, DEC, 180, ADD, 255)) {mode ++; conSpeed = SLOW;}
-                break;
-            default:if(conAllColorsOff()) {mode = 0;}
+                             
+//            case 4: if(conColorsPWM(RED_GREEN, ADD, 255, ADD, 240)) {mode ++;}
+//                break;
+//            case 5: if(conColorsPWM(RED_GREEN, DEC, 230, DEC, 140)) {mode ++;}
+//                break;
+//            case 6: if(conColorsPWM(BLUE_GREEN, ADD, 255, ADD, 230)) {mode ++;}
+//                break;
+            default:if (conAllColorsOff()) {mode = 0;}
                 break;
         }
     }
