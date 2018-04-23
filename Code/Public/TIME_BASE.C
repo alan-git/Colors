@@ -40,7 +40,7 @@ void InitInterrupt()
 /* *******************************************************************************************
 // 时基处理部分
 /* ******************************************************************************************* */
-void Timer_TimeBase_Isr () interrupt 1 using 1
+void Timer_TimeBase_Isr () interrupt 1
 {
     static u16 /*cp0, */cp1, cp2;
 //    if (++ cp0 > OVERFLOW_TIMES_1ST)

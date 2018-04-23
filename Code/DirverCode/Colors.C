@@ -1,6 +1,6 @@
 /* *******************************************************************************************
 // Author: biu~
-// Last Date:2018/04/22
+// Last Date:2018/04/23
 /* ******************************************************************************************* */
 #include "Colors.H"
 
@@ -12,8 +12,8 @@
 #define PWM_GREEN   1
 #define PWM_RED     2
 
-#define PWM_ACCELERATE1 0xA0
-#define PWM_ACCELERATE2 0xC7
+#define PWM_ACCELERATE1 (PWM_DUTY_MAX/10*9)
+#define PWM_ACCELERATE2 (PWM_DUTY_MAX/10*7)
 sbit Color_Blue = P3^1;
 sbit Color_Green = P3^2;
 sbit Color_Red = P3^3;
@@ -34,9 +34,9 @@ void TimerPWM_Init()
 void TimerPWM()
 {
     static data u8 temp_pwm_duty = 0;
-    if(temp_pwm_duty == PwmDuty[PWM_BLUE]) Color_Blue = PWM_OFF;       //判断PWM占空比是否结束；
-    if(temp_pwm_duty == PwmDuty[PWM_GREEN]) Color_Green = PWM_OFF;
-    if(temp_pwm_duty == PwmDuty[PWM_RED]) Color_Red = PWM_OFF;
+    if(temp_pwm_duty >= PwmDuty[PWM_BLUE]) Color_Blue = PWM_OFF;       //判断PWM占空比是否结束；
+    if(temp_pwm_duty >= PwmDuty[PWM_GREEN]) Color_Green = PWM_OFF;
+    if(temp_pwm_duty >= PwmDuty[PWM_RED]) Color_Red = PWM_OFF;
         
     if(++temp_pwm_duty == PWM_DUTY_MAX)                 //PWM周期结束，重新开始新的周期；
     {
@@ -57,11 +57,11 @@ bit TimerPWM_Duty_Add(u8 _bit, u8 temp_pwm)
 {
     if (temp_pwm > PwmDuty[_bit])
     {
-        if (PwmDuty[_bit] >= PWM_ACCELERATE2 && PwmDuty[_bit] < 0xFD)   //亮度较高时，由于人眼对较亮的灯光亮度改变感受不明显，进行加速处理；
+        if (PwmDuty[_bit] > PWM_ACCELERATE2 && PwmDuty[_bit] < 0xFD)   //亮度较高时，由于人眼对较亮的灯光亮度改变感受不明显，进行加速处理；
         {
             PwmDuty[_bit] += 3;
         }
-        else if (PwmDuty[_bit] >= PWM_ACCELERATE1 && PwmDuty[_bit] < 0xFE)
+        else if (PwmDuty[_bit] > PWM_ACCELERATE1 && PwmDuty[_bit] < 0xFE)
         {
             PwmDuty[_bit] += 2;
         }
@@ -84,11 +84,11 @@ bit TimerPWM_Duty_Dec(u8 _bit, u8 temp_pwm)
 {
     if (temp_pwm < PwmDuty[_bit])
     {
-        if (PwmDuty >= PWM_ACCELERATE2) //亮度较高时，由于人眼对较亮的灯光亮度改变感受不明显，进行加速处理；
+        if (PwmDuty > PWM_ACCELERATE2 && PwmDuty[_bit] > 3) 
         {
             PwmDuty[_bit] -= 3;
         }
-        else if (PwmDuty[_bit] >= PWM_ACCELERATE1)
+        else if (PwmDuty[_bit] > PWM_ACCELERATE1 && PwmDuty[_bit] > 2)
         {
             PwmDuty[_bit] -= 2;
         }

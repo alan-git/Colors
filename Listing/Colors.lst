@@ -1,4 +1,4 @@
-C51 COMPILER V9.02   COLORS                                                                04/22/2018 12:31:08 PAGE 1   
+C51 COMPILER V9.02   COLORS                                                                04/23/2018 10:18:57 PAGE 1   
 
 
 C51 COMPILER V9.02, COMPILATION OF MODULE COLORS
@@ -10,7 +10,7 @@ line level    source
 
    1          /* *******************************************************************************************
    2          // Author: biu~
-   3          // Last Date:2018/04/22
+   3          // Last Date:2018/04/23
    4          /* ******************************************************************************************* */
    5          #include "Colors.H"
    6          
@@ -22,8 +22,8 @@ line level    source
   12          #define PWM_GREEN   1
   13          #define PWM_RED     2
   14          
-  15          #define PWM_ACCELERATE1 0xA0
-  16          #define PWM_ACCELERATE2 0xC7
+  15          #define PWM_ACCELERATE1 (PWM_DUTY_MAX/10*9)
+  16          #define PWM_ACCELERATE2 (PWM_DUTY_MAX/10*7)
   17          sbit Color_Blue = P3^1;
   18          sbit Color_Green = P3^2;
   19          sbit Color_Red = P3^3;
@@ -44,9 +44,9 @@ line level    source
   34          void TimerPWM()
   35          {
   36   1          static data u8 temp_pwm_duty = 0;
-  37   1          if(temp_pwm_duty == PwmDuty[PWM_BLUE]) Color_Blue = PWM_OFF;       //ÅÐ¶ÏPWMÕ¼¿Õ±ÈÊÇ·ñ½áÊø£»
-  38   1          if(temp_pwm_duty == PwmDuty[PWM_GREEN]) Color_Green = PWM_OFF;
-  39   1          if(temp_pwm_duty == PwmDuty[PWM_RED]) Color_Red = PWM_OFF;
+  37   1          if(temp_pwm_duty >= PwmDuty[PWM_BLUE]) Color_Blue = PWM_OFF;       //ÅÐ¶ÏPWMÕ¼¿Õ±ÈÊÇ·ñ½áÊø£»
+  38   1          if(temp_pwm_duty >= PwmDuty[PWM_GREEN]) Color_Green = PWM_OFF;
+  39   1          if(temp_pwm_duty >= PwmDuty[PWM_RED]) Color_Red = PWM_OFF;
   40   1              
   41   1          if(++temp_pwm_duty == PWM_DUTY_MAX)                 //PWMÖÜÆÚ½áÊø£¬ÖØÐÂ¿ªÊ¼ÐÂµÄÖÜÆÚ£»
   42   1          {
@@ -62,19 +62,19 @@ line level    source
   52          
   53          /* *******************************************************************************************
   54          // PWMÕ¼¿Õ¸Ä±ä¹¦ÄÜº¯Êý£ºÄ³_bit£¨ÑÕÉ«£©Õ¼¿Õ±ÈÔö¼ÓÖÁ temp_pwm
-C51 COMPILER V9.02   COLORS                                                                04/22/2018 12:31:08 PAGE 2   
+C51 COMPILER V9.02   COLORS                                                                04/23/2018 10:18:57 PAGE 2   
 
   55          /* ******************************************************************************************* */
   56          bit TimerPWM_Duty_Add(u8 _bit, u8 temp_pwm)
   57          {
   58   1          if (temp_pwm > PwmDuty[_bit])
   59   1          {
-  60   2              if (PwmDuty[_bit] >= PWM_ACCELERATE2 && PwmDuty[_bit] < 0xFD)   //ÁÁ¶È½Ï¸ßÊ±£¬ÓÉÓÚÈËÑÛ¶Ô½ÏÁÁµÄµÆ¹â
-             -ÁÁ¶È¸Ä±ä¸ÐÊÜ²»Ã÷ÏÔ£¬½øÐÐ¼ÓËÙ´¦Àí£»
+  60   2              if (PwmDuty[_bit] > PWM_ACCELERATE2 && PwmDuty[_bit] < 0xFD)   //ÁÁ¶È½Ï¸ßÊ±£¬ÓÉÓÚÈËÑÛ¶Ô½ÏÁÁµÄµÆ¹âÁ
+             -Á¶È¸Ä±ä¸ÐÊÜ²»Ã÷ÏÔ£¬½øÐÐ¼ÓËÙ´¦Àí£»
   61   2              {
   62   3                  PwmDuty[_bit] += 3;
   63   3              }
-  64   2              else if (PwmDuty[_bit] >= PWM_ACCELERATE1 && PwmDuty[_bit] < 0xFE)
+  64   2              else if (PwmDuty[_bit] > PWM_ACCELERATE1 && PwmDuty[_bit] < 0xFE)
   65   2              {
   66   3                  PwmDuty[_bit] += 2;
   67   3              }
@@ -97,12 +97,11 @@ line level    source
   84          {
   85   1          if (temp_pwm < PwmDuty[_bit])
   86   1          {
-  87   2              if (PwmDuty >= PWM_ACCELERATE2) //ÁÁ¶È½Ï¸ßÊ±£¬ÓÉÓÚÈËÑÛ¶Ô½ÏÁÁµÄµÆ¹âÁÁ¶È¸Ä±ä¸ÐÊÜ²»Ã÷ÏÔ£¬½øÐÐ¼ÓËÙ´¦Àí
-             -£»
+  87   2              if (PwmDuty > PWM_ACCELERATE2 && PwmDuty[_bit] > 3) 
   88   2              {
   89   3                  PwmDuty[_bit] -= 3;
   90   3              }
-  91   2              else if (PwmDuty[_bit] >= PWM_ACCELERATE1)
+  91   2              else if (PwmDuty[_bit] > PWM_ACCELERATE1 && PwmDuty[_bit] > 2)
   92   2              {
   93   3                  PwmDuty[_bit] -= 2;
   94   3              }
@@ -126,9 +125,9 @@ line level    source
  112          #define RED_GREEN   3
  113          /* *******************************************************************************************
  114          // ¶¨Ê±Æ÷ÑÓÊ±º¯Êý 
-C51 COMPILER V9.02   COLORS                                                                04/22/2018 12:31:08 PAGE 3   
-
  115          // ²ÎÊý1Îªx¸ö100MS£¬×î´óÑÓÊ±²»³¬¹ý25.5S£»
+C51 COMPILER V9.02   COLORS                                                                04/23/2018 10:18:57 PAGE 3   
+
  116          // ²ÎÊý2Îª»ù×¼Ê±¼äÎª¶àÉÙºÁÃë£¬SLOWÄ£Ê½ÓëFASTÄ£Ê½¾ùÓÐ×Ô¼ºµÄ»ù×¼Ê±³¤£»
  117          /* ******************************************************************************************* */
  118          static bit TimerDelay(u8 x_100ms, u8 base_ms)
@@ -190,9 +189,9 @@ line level    source
              -WM_RED, temp_color1))
  169   3                  {
  170   4                      count ++;
-C51 COMPILER V9.02   COLORS                                                                04/22/2018 12:31:08 PAGE 4   
-
  171   4                  }
+C51 COMPILER V9.02   COLORS                                                                04/23/2018 10:18:57 PAGE 4   
+
  172   3                  if ((color2_dec_or_inc == DEC) ? TimerPWM_Duty_Dec(PWM_GREEN, temp_color2) : TimerPWM_Duty_Add
              -(PWM_GREEN, temp_color2))
  173   3                  {
@@ -254,9 +253,9 @@ line level    source
  229   3                  case 3: if (TimerPWM_Duty_Dec(PWM_RED, 0))                      //×ÏµÆ½¥À¶£¬ºóÖð½¥±äÎªµåÀ¶£¨»ò
              -Õß½Ð×öÇà£¿£©£¬ÔÙºóÎªÂÌ£»
  230   3                              if (TimerPWM_Duty_Add(PWM_GREEN, PWM_DUTY_MAX))
-C51 COMPILER V9.02   COLORS                                                                04/22/2018 12:31:08 PAGE 5   
-
  231   3                                  if (TimerPWM_Duty_Dec(PWM_BLUE, 0)) {mode ++;}      
+C51 COMPILER V9.02   COLORS                                                                04/23/2018 10:18:57 PAGE 5   
+
  232   3                      break;                                                          
  233   3                  case 4: if (TimerPWM_Duty_Add(PWM_RED, PWM_DUTY_MAX))           //ÂÌ½¥±äÎª»Æ£¬ºó½¥±äÎªºì£¬½¥Ï¨
              -£»
@@ -318,14 +317,14 @@ line level    source
  289   3                  default:if (conAllColorsOff()) {mode = 0;}
  290   3                      break;
  291   3              }
-C51 COMPILER V9.02   COLORS                                                                04/22/2018 12:31:08 PAGE 6   
-
  292   2          }
+C51 COMPILER V9.02   COLORS                                                                04/23/2018 10:18:57 PAGE 6   
+
  293   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    780    ----
+   CODE SIZE        =    799    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
